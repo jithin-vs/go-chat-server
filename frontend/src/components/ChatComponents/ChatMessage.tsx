@@ -1,4 +1,25 @@
-function ChatMessage() {
+import WebSocketService from "@/utils/webSocketService";
+import { useEffect, useState } from "react";
+
+interface WebSocketProp {
+  socket: WebSocketService | null;
+}
+function ChatMessage({ socket }: WebSocketProp) {
+  const [message, setMessage] = useState('');
+  useEffect(() => {
+    if (socket) {
+      const handleMessage = (message: string) => {
+        console.log("New message received:", message);
+        setMessage(message);
+      };
+
+      socket.onMessage(handleMessage);
+
+ 
+      return () => {
+      };
+    }
+  }, [socket]);
   return (
     <div className="flex items-start justify-end gap-2.5 m-8">
       <div className="flex flex-col gap-1 w-full max-w-[320px]">
@@ -13,8 +34,7 @@ function ChatMessage() {
         <div className="flex flex-col leading-1.5 p-4 border-gray-200 bg-gray-100 rounded-s-xl rounded-se-xl dark:bg-gray-700">
           <p className="text-sm font-normal text-gray-900 dark:text-white">
             {" "}
-            That's awesome. I think our users will really appreciate the
-            improvements.
+            {message}
           </p>
         </div>
       </div>

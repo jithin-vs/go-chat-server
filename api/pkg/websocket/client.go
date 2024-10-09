@@ -1,8 +1,10 @@
 package websocket
 
 import (
+	"fmt"
 	"log"
 	"sync"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -19,18 +21,22 @@ type Message struct{
 }
 
 func (c *Client) Read(){
+
 	defer func(){
-       c.Pool.Unregister <- c
-	   c.Conn.Close()
-	}()
+		c.Pool.Unregister <- c
+		c.Conn.Close()
+	 }()
 
 	for{
 		MessageType,b,err := c.Conn.ReadMessage()
+		fmt.Println("message :",MessageType)
 		if err != nil{
 			log.Println(err)
+			return
 		}
 		message := Message{Type:MessageType,Body: string(b)}
 		c.Pool.Broadcast <- message
 	}
+ 
 }
 

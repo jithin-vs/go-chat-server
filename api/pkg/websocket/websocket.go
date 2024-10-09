@@ -1,7 +1,9 @@
 package websocket
 
 import (
+	"fmt"
 	"net/http"
+
 	"github.com/gorilla/websocket"
 )
 
@@ -17,5 +19,6 @@ func Upgrade(w http.ResponseWriter,r *http.Request)(*websocket.Conn, error){
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("connection established");
 	return conn, nil
 }
