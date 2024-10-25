@@ -13,14 +13,14 @@ export default function Home() {
     const service = new WebSocketService("ws://localhost:8080");
     setWsService(service);
     return () => {
-      service.close(); // Clean up when the component unmounts
+      service.close();  
     };
   }, []);
   
   return (
     <div>
       <ChatHistory socket = {wsService} /> 
-      <ChatMessage socket = {wsService} />
+      {/* <ChatMessage socket = {wsService} /> */}
       <ChatInput   socket = {wsService}/>
     </div>
   );

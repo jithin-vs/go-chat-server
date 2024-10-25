@@ -27,9 +27,11 @@ function ChatInput({socket}:WebSocketProp) {
 const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!message) {
-        console.log("no message entered");
+      console.log("no message entered");
+      return;
     }
-    try {
+  try {
+        console.log(message);
         socket?.sendMessage(message);
         setMessage("");
     } catch (error) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
-
+    "time"
 	"github.com/gorilla/websocket"
 )
 
@@ -16,8 +16,10 @@ type Client struct{
 }
 
 type Message struct{
+	Id      string `json:"id"`
 	Type  	int `json:"type"`
 	Body    string `json:"body"`
+	TimeStamp time.Time `json:"time"`
 }
 
 func (c *Client) Read(){
@@ -34,7 +36,8 @@ func (c *Client) Read(){
 			log.Println(err)
 			return
 		}
-		message := Message{Type:MessageType,Body: string(b)}
+		uid := fmt.Sprintf("%s-%d", c.ID, time.Now().Unix())
+		message := Message{Id:uid,Type:MessageType,Body: string(b),TimeStamp: time.Now()}
 		c.Pool.Broadcast <- message
 	}
  
