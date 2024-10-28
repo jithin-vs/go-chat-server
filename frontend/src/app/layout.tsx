@@ -2,14 +2,27 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
+const readexRegular = localFont({
+  src: "./fonts/ReadexPro-Regular.ttf",
+  variable: "--font-readex-regular",
   weight: "100 900",
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
+
+const readexMedium = localFont({
+  src: "./fonts/ReadexPro-Medium.ttf",
+  variable: "--font-readex-medium",
+  weight: "100 900",
+});
+
+const readexSemiBold = localFont({
+  src: "./fonts/ReadexPro-SemiBold.ttf",
+  variable: "--font-readex-semibold",
+  weight: "100 900",
+});
+
+const readexBold = localFont({
+  src: "./fonts/ReadexPro-Bold.ttf",
+  variable: "--font-readex-bold",
   weight: "100 900",
 });
 
@@ -26,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${readexRegular.variable} ${readexMedium.variable} ${readexSemiBold.variable} ${readexBold.variable} antialiased`}
       >
         {children}
       </body>
