@@ -2,10 +2,11 @@ package main
 
 import (
 	"chatserver/pkg/websocket"
-	// "fmt"
+	"chatserver/pkg/db"
 	"log"
 	"net/http"
 	"github.com/rs/xid"
+
 )
  
 func serveWS(pool *websocket.Pool,w http.ResponseWriter, r *http.Request){
@@ -41,4 +42,6 @@ func main()  {
 	if err!= nil {
         log.Println(err)
     }
+	db.ConnectMongoDB()
+
 }
