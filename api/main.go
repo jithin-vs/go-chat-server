@@ -37,11 +37,11 @@ func handleChat(){
 
 func main()  {
 	handleChat()
+	db.ConnectMongoDB()
 	log.Println("server running on port 8080")
 	err := http.ListenAndServe(":8080",nil)
 	if err!= nil {
         log.Println(err)
     }
-	db.ConnectMongoDB()
 
 }

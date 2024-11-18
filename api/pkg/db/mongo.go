@@ -3,8 +3,11 @@ package db
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 	"sync"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -17,7 +20,11 @@ var (
 
 
 func ConnectMongoDB() (*mongo.Client, error) {
-	uri := "mongodb+srv://jithinvs1045:122333@cluster0.563o5.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    err := godotenv.Load(".env")
+    if err != nil{
+     log.Fatalf("Error loading .env file: %s", err)
+    }   
+	uri := os.Getenv("DB_CONNECTION")
     mongoOnce.Do(func() {
         clientOptions := options.Client().ApplyURI(uri)
         var err error
@@ -30,6 +37,7 @@ func ConnectMongoDB() (*mongo.Client, error) {
         err = clientInstance.Ping(context.TODO(), nil)
         if err != nil {
             clientInstanceError = err
+            log.Println("error connnecting to mongodb",err)
             return
         }
         fmt.Println("Connected to MongoDB")
