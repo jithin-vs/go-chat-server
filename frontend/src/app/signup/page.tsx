@@ -4,11 +4,16 @@ import SubmitButton from "@/components/Buttons/SubmitButton";
 import TextInput from "@/components/Inputs/TextInput";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation"
+import { PORT } from "@/config/index";
 
 export default function SignUp() {
+  const router = useRouter();
   const [errors, setErrors] = useState<string[]>([]);
   const submitForm = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("env",PORT,process.env.SERVER_URL)
     const formData = new FormData(e.currentTarget);
     const regex =
       /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
@@ -25,7 +30,27 @@ export default function SignUp() {
       setErrors(["Passwords do not match"]);
       return;
     }
+    const apiData = {
+      username,
+      email,
+      password,
+    }
+    // Perform API call to sign up user
+    axios.post(`${PORT}/signup`, apiData, {
+      headers: {
+          'Content-Type': 'application/json'
+      }
+  })
+    .then((response) => {
+        console.log("User signed up successfully:", response.data);
+        router.push('/login')
+      })
+     .catch((error) => {
+        console.error("Error signing up user:", error.response.data.error);
+        setErrors([error.response.data.error]);
+      });
   };
+
   return (
     <div className="mt-6 max-w-lg py-6 rounded-xl mx-auto bg-white shadow-md">
       <div className="flex flex-col justify-center items-center py-6">
