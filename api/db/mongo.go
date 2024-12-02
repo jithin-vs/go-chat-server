@@ -33,6 +33,10 @@ func ConnectMongoDB() (*mongo.Client, error) {
             clientInstanceError = err
             return
         }
+        if clientInstanceError != nil {
+            log.Println("Error connecting to MongoDB:", clientInstanceError)
+            return
+        }
 
         err = clientInstance.Ping(context.TODO(), nil)
         if err != nil {
@@ -44,4 +48,23 @@ func ConnectMongoDB() (*mongo.Client, error) {
     })
 
     return clientInstance, clientInstanceError
+}
+
+func GetCollection(name string) *mongo.Collection {
+   
+    if clientInstance == nil {
+        // If client is nil, attempt to connect
+        _, err := ConnectMongoDB()
+        if err != nil {
+            log.Fatalf("Failed to initialize MongoDB client: %v", err)
+        }
+    }
+
+
+    // Get the database (you can pass your database name here)
+    db := clientInstance.Database("chatserver")
+
+    // Get the collection by name
+    collection := db.Collection(name)
+    return collection
 }

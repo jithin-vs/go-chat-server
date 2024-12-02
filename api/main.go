@@ -1,45 +1,31 @@
 package main
 
 import (
-	"chatserver/pkg/websocket"
-	"chatserver/pkg/db"
+	"chatserver/db"
+	"chatserver/routes"
 	"log"
 	"net/http"
-	"github.com/rs/xid"
+	"github.com/rs/cors"
 
 )
  
-func serveWS(pool *websocket.Pool,w http.ResponseWriter, r *http.Request){
 
-		// log.Println("Attempting to upgrade connection")
-		conn, err := websocket.Upgrade(w, r)
-		if err != nil {
-			log.Printf("Error upgrading connection: %+v\n", err)
-			http.Error(w, "Could not upgrade connection", http.StatusBadRequest)
-			return
-		}
-	id := xid.New()
-	client := &websocket.Client{
-		ID : id.String(),
-		Conn: conn,
-		Pool: pool,
-	}
-	pool.Register <- client
-	client.Read()
-}
-func handleChat(){
-    pool := websocket.NewPool()
-	go pool.Start()
-	http.HandleFunc("/",func(w http.ResponseWriter, r *http.Request) {
-		serveWS(pool, w, r)
-	})
-}
 
 func main()  {
-	handleChat()
-	db.ConnectMongoDB()
+	// handleChat()
+	_, dberr := db.ConnectMongoDB()
+	if dberr != nil {
+		log.Fatalf("Failed to initialize MongoDB: %v", dberr)
+	}
+	routers.SetupRoutes()
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"}, // Allow only your React app
+		AllowCredentials: true,                             // Allow cookies/auth headers
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "Accept"},
+	})
 	log.Println("server running on port 8080")
-	err := http.ListenAndServe(":8080",nil)
+	err := http.ListenAndServe(":8080",corsHandler.Handler(http.DefaultServeMux))
 	if err!= nil {
         log.Println(err)
     }
