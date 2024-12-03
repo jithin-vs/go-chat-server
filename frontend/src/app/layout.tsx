@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { AuthProvider } from "@/context/AuthContext";
 
 const readexRegular = localFont({
   src: "./fonts/ReadexPro-Regular.ttf",
@@ -41,7 +42,9 @@ export default function RootLayout({
       <body
         className={`${readexRegular.variable} ${readexMedium.variable} ${readexSemiBold.variable} ${readexBold.variable} antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

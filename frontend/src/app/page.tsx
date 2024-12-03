@@ -10,7 +10,7 @@ export default function Home() {
   const [wsService, setWsService] = useState<WebSocketService | null>(null);
   
   useEffect(() => {
-    const service = new WebSocketService("ws://localhost:8080");
+    const service = new WebSocketService("ws://localhost:8080/home");
     setWsService(service);
     return () => {
       service.close();  
