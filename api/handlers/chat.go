@@ -7,7 +7,5 @@ import (
 func ChatHandler(w http.ResponseWriter, r *http.Request){
     pool := websocket.NewPool()
 	go pool.Start()
-	http.HandleFunc("/",func(w http.ResponseWriter, r *http.Request) {
-		websocket.ServeWS(pool, w, r)
-	})
+	websocket.ServeWS(pool, w, r)
 }
