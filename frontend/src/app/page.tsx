@@ -2,7 +2,6 @@
 import ChatMessage from "@/components/ChatComponents/ChatMessage";
 import ChatInput from "@/components/ChatComponents/ChatInput";
 import ChatHistory from "@/components/ChatComponents/ChatHistory";
-import Image from "next/image";
 import WebSocketService from "@/utils/webSocketService";
 import { useEffect, useState } from "react";
 

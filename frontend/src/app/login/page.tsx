@@ -17,25 +17,29 @@ export default function Login() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     console.log("formData", Object.fromEntries(formData.entries()));
-    const username = formData.get("username")?.toString() || "";
+    const email = formData.get("email")?.toString() || "";
     const password = formData.get("password")?.toString() || "";
   
     const apiData = {
-      username,
+      email,
       password,
     }
     // Perform API call to sign up user
-    axios.post(`${PORT}/signup`, apiData, {
+    axios.post(`${PORT}/login`, apiData, {
       headers: {
           'Content-Type': 'application/json'
       }
   })
-    .then((response) => {
+      .then((response) => {
+        if(response.status === 200) {
+          console.log("User logged in successfully:", response.data);
+          router.push('/')
+          return
+        }
         console.log("User signed up successfully:", response.data);
-        router.push('/')
       })
      .catch((error) => {
-        console.error("Error signing up user:", error.response.data.error);
+        console.error("Error signing up user:", error);
         setErrors([error.response.data.error]);
       });
     
@@ -47,7 +51,7 @@ export default function Login() {
   </div>
   <div className="max-w-md mx-auto p-4">
     <form onSubmit={submitForm}>
-      <TextInput label ="Username" name="username" type ="text" isRequired = {true} placeholder="Enter your email" />
+      <TextInput label ="Username" name="email" type ="text" isRequired = {true} placeholder="Enter your email" />
       <TextInput label ="Password" name="password" type="password" isRequired = {true} placeholder="Enter your password" />
       <SubmitButton Text="Login" />
     </form>

@@ -42,9 +42,10 @@ export default function RootLayout({
       <body
         className={`${readexRegular.variable} ${readexMedium.variable} ${readexSemiBold.variable} ${readexBold.variable} antialiased`}
       >
-        <AuthProvider>
+        {/* <AuthProvider>
           {children}
-        </AuthProvider>
+        </AuthProvider> */}
+        {children}
       </body>
     </html>
   );

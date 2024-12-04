@@ -14,3 +14,15 @@ func SendResponse(w http.ResponseWriter, statusCode int, data interface{}) {
         http.Error(w, "Failed to send response", http.StatusInternalServerError)
     }
 }
+
+func SendErrorResponse(w http.ResponseWriter, statusCode int, errorMessage string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	response := map[string]interface{}{
+		"success": false,
+		"error":   errorMessage,
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+

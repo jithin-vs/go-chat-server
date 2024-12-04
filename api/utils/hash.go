@@ -32,7 +32,7 @@ func CreateToken(username string, duration time.Duration) (string,int64,error) {
 		"iat": time.Now().Unix(),                 // Issued at
 	})
 
-	tokenString, err := claims.SignedString(secretKey)
+	tokenString, err := claims.SignedString([]byte(secretKey))
     if err != nil {
         return "",0,err
     }

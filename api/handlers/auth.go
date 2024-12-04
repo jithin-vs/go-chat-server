@@ -5,6 +5,7 @@ import (
 	"chatserver/services"
 	"chatserver/utils"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -22,10 +23,20 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
     // Insert the user into MongoDB
+	fmt.Println("user:", user.Email)
 	result, err := services.LoginUser(r.Context(), user)
 	if err != nil {
-		http.Error(w, "Failed to register user", http.StatusInternalServerError)
-		return
+		switch err.Error() {
+		case "user not found":
+			utils.SendErrorResponse(w, http.StatusNotFound, "User does not exist")
+			return
+		case "incorrect password":
+			utils.SendErrorResponse(w, http.StatusUnauthorized, "Invalid credentials")
+			return
+		default:
+			utils.SendErrorResponse(w, http.StatusInternalServerError, "Something went wrong")
+			return
+		}
 	}
 
 	// Construct the response
@@ -44,8 +55,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	utils.SetAuthCookies(w, accessToken, refreshToken, accessMaxAge, refreshMaxAge)
 	response := map[string]interface{}{
 		"message":      "User logged in successfully",
-		"accessToken":  accessToken,
-		"refreshToken": refreshToken,
+		// "accessToken":  accessToken,
+		// "refreshToken": refreshToken,
 		"data" : result,
 	}
 	
