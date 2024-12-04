@@ -10,6 +10,12 @@ import (
 	"time"
 )
 
+type UserResponse struct {
+    ID       string `json:"id"`
+    Username string `json:"username"`
+    Email    string `json:"email"`
+}
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
@@ -50,7 +56,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error creating refresh token", http.StatusInternalServerError)
 		return
 	}
-
+     
     // Set auth cookies
 	utils.SetAuthCookies(w, accessToken, refreshToken, accessMaxAge, refreshMaxAge)
 	response := map[string]interface{}{

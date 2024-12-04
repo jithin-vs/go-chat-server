@@ -2,6 +2,7 @@
 import SubmitButton from "@/components/Buttons/SubmitButton";
 import TextInput from "@/components/Inputs/TextInput";
 import { PORT } from "@/config/index";
+import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
@@ -9,7 +10,8 @@ import { FormEvent, useState } from "react";
 
 
 export default function Login() {
-
+  
+  const {setUser}=useAuth()
   const router = useRouter();
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -33,7 +35,8 @@ export default function Login() {
       .then((response) => {
         if(response.status === 200) {
           console.log("User logged in successfully:", response.data);
-          router.push('/')
+          setUser(response.data.user)
+          router.push('/home')
           return
         }
         console.log("User signed up successfully:", response.data);

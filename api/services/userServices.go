@@ -17,6 +17,7 @@ func init() {
     userCollection = db.GetCollection("users")
 }
 
+
 func RegisterUser(ctx context.Context, user models.User) (interface{}, error) {
 	hashedPassword,_ := utils.HashPassword(user.Password)
 	user.Password = hashedPassword
