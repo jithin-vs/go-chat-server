@@ -1,6 +1,8 @@
 package chatsocket
 
 import (
+	"chatserver/services"
+	"chatserver/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,6 +28,11 @@ type ChatServer struct {
 	upgrader    websocket.Upgrader
 }
 
+type CreateChatRequest struct {
+	SenderID    string `json:"senderId"`
+	RecipientID string `json:"recipientId"`
+}
+
 func NewChatServer() *ChatServer {
 	return &ChatServer{
 		clients: make(map[string]*Client),
@@ -40,13 +47,22 @@ func NewChatServer() *ChatServer {
 func (s *ChatServer) HandleConnection(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("userId")
 	fmt.Println("suer",userID)
-	if userID == "" {
-		http.Error(w, "User ID is required", http.StatusBadRequest)
+	if userID =="undefined" {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "User ID is required")
 		return
 	}
-
+    isExist,Usererr := services.IsUserExists(r.Context(),userID)
+	if Usererr!= nil {
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "server error ")
+		return
+    }
+	if !isExist {
+		utils.SendErrorResponse(w, http.StatusNotFound, "User does not exist")
+		return
+    }
 	conn, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		fmt.Println("here")
 		log.Printf("Upgrade error: %v", err)
 		return
 	}
@@ -63,6 +79,86 @@ func (s *ChatServer) HandleConnection(w http.ResponseWriter, r *http.Request) {
 	// Start goroutines for reading and sending messages
 	go s.readMessages(userID, client)
 	go s.writeMessages(client)
+}
+
+func (s *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) {
+	// Validate request method
+	if r.Method != http.MethodPost {
+		utils.SendErrorResponse(w, http.StatusMethodNotAllowed, "Only POST method is allowed")
+		return
+	}
+
+	// Parse request body
+	var req CreateChatRequest
+	err := utils.ParseRequest(r, &req)
+	if err != nil {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+    fmt.Println("chat users",req);
+	// Validate sender and recipient IDs
+	if req.SenderID == "" || req.RecipientID == "" {
+		utils.SendErrorResponse(w, http.StatusBadRequest, "Sender and Recipient IDs are required")
+		return
+	}
+	// Check if sender exists
+	senderExists, err := services.IsUserExists(r.Context(), req.SenderID)
+	if err != nil {
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Error checking sender")
+		return
+	}
+	if !senderExists {
+		utils.SendErrorResponse(w, http.StatusNotFound, "Sender does not exist")
+		return
+	}
+
+	// Check if recipient exists
+	recipientExists, err := services.IsUserExists(r.Context(), req.RecipientID)
+	if err != nil {
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Error checking recipient")
+		return
+	}
+	if !recipientExists {
+		utils.SendErrorResponse(w, http.StatusNotFound, "Recipient does not exist")
+		return
+	}
+
+	// Check if chat already exists
+	existingChat, err := services.FindChatByParticipants(r.Context(), req.SenderID, req.RecipientID)
+	if err != nil {
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Error checking existing chat")
+		return
+	}
+
+	// If chat exists, return existing chat
+	if existingChat != nil {
+		utils.SendResponse(w, http.StatusOK, existingChat)
+		return
+	}
+
+	// Create new chat
+	newChat, err := services.CreateChat(r.Context(), req.SenderID, req.RecipientID)
+	if err != nil {
+		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to create chat")
+		return
+	}
+
+    recipientDetails,err := services.FindUserById(r.Context(),req.RecipientID)
+	if err != nil {
+		utils.SendErrorResponse(w, http.StatusNoContent, "Recipient not found")
+		return
+	}
+
+	response := map[string]interface{}{
+		"message": "Chat created successfully",
+		"data": map[string]interface{}{
+			"chat":          newChat,
+			"recipient":     recipientDetails,
+		},
+	}
+
+	// Respond with created chat
+	utils.SendResponse(w, http.StatusCreated, response)
 }
 
 func (s *ChatServer) readMessages(userID string, client *Client) {

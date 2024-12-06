@@ -6,7 +6,7 @@ import (
 	"chatserver/utils"
 	"encoding/json"
 	"net/http"
-	"time"
+	// "time"
 )
 
 type UserResponse struct {
@@ -44,19 +44,19 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Construct the response
-	accessToken,accessMaxAge, err := utils.CreateToken(user.Email,time.Hour)
-	if err != nil {
-		http.Error(w, "Error creating token", http.StatusInternalServerError)
-		return
-	}
-	refreshToken,refreshMaxAge, err := utils.CreateToken(user.Email, 7*24*time.Hour) // Refresh token valid for 7 days
-	if err != nil {
-		http.Error(w, "Error creating refresh token", http.StatusInternalServerError)
-		return
-	}
+	// accessToken,accessMaxAge, err := utils.CreateToken(user.Email,time.Hour)
+	// if err != nil {
+	// 	http.Error(w, "Error creating token", http.StatusInternalServerError)
+	// 	return
+	// }
+	// refreshToken,refreshMaxAge, err := utils.CreateToken(user.Email, 7*24*time.Hour) // Refresh token valid for 7 days
+	// if err != nil {
+	// 	http.Error(w, "Error creating refresh token", http.StatusInternalServerError)
+	// 	return
+	// }
 
     // Set auth cookies
-	utils.SetAuthCookies(w, accessToken, refreshToken, accessMaxAge, refreshMaxAge)
+	// utils.SetAuthCookies(w, accessToken, refreshToken, accessMaxAge, refreshMaxAge)
 	response := map[string]interface{}{
 		"message":      "User logged in successfully",
 		// "accessToken":  accessToken,

@@ -25,4 +25,11 @@ func SendErrorResponse(w http.ResponseWriter, statusCode int, errorMessage strin
 	json.NewEncoder(w).Encode(response)
 }
 
+func ParseRequest(r *http.Request, req interface{}) error {
+    if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+        return err
+    }
+    return nil
+}
+
 
