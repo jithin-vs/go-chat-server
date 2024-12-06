@@ -19,7 +19,7 @@ func main()  {
 	}
 	routers.SetupRoutes()
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Allow only your React app
+		AllowedOrigins:   []string{	"http://localhost:3000","http://localhost:3001",}, // Allow only your React app
 		AllowCredentials: true,                             // Allow cookies/auth headers
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "Accept"},

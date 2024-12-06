@@ -41,7 +41,7 @@ func LoginUser(ctx context.Context, user models.User) (*models.User, error) {
         }
         return nil, err
     }
-
+    
     match := utils.CheckPasswordHash(user.Password, foundUser.Password) 
     if !match {
         return nil, fmt.Errorf("incorrect password")

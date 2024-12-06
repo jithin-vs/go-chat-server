@@ -5,7 +5,6 @@ import (
 	"chatserver/services"
 	"chatserver/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -29,7 +28,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
     // Insert the user into MongoDB
-	fmt.Println("user:", user.Email)
 	result, err := services.LoginUser(r.Context(), user)
 	if err != nil {
 		switch err.Error() {
@@ -56,7 +54,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error creating refresh token", http.StatusInternalServerError)
 		return
 	}
-     
+
     // Set auth cookies
 	utils.SetAuthCookies(w, accessToken, refreshToken, accessMaxAge, refreshMaxAge)
 	response := map[string]interface{}{
