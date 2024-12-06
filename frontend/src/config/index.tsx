@@ -1,1 +1,2 @@
-export const PORT = "http://localhost:8080"
+export const PORT = process.env.NEXT_PUBLIC_SERVER_URL 
+export const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL

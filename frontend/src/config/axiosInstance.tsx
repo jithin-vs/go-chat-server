@@ -1,6 +1,6 @@
 import axios from "axios"
 import { PORT } from "./index";
-import { getCookies, setCookies } from "@/hooks/cookies";
+import { getCookies, setCookies } from "../hooks/cookies";
 
 const axiosInstance = axios.create({
     baseURL: `${PORT}`, 

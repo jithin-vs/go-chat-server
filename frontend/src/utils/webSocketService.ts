@@ -49,6 +49,10 @@ class WebSocketService {
             this.messageQueue.push(message);
         }
     }
+    emit(event: string, data: any) {
+      const payload = JSON.stringify({ event, data });
+      this.sendMessage(payload);
+    }
 
     onMessage(callback: (message: string) => void) {
       this.messageCallbacks.push(callback); 
