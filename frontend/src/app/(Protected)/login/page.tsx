@@ -6,14 +6,17 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 
 export default function Login() {
   
-  const {setUser}=useAuth()
+  const {user,setUser}=useAuth()
   const router = useRouter();
   const [errors, setErrors] = useState<string[]>([]);
+  useEffect(() => {
+    console.log('User state changed:', user)
+  }, [user])
 
   const submitForm = (e:FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,8 +37,8 @@ export default function Login() {
   })
       .then((response) => {
         if(response.status === 200) {
-          console.log("User logged in successfully:", response.data);
-          setUser(response.data.user)
+          console.log("User logged in successfully:", response.data.data);
+          setUser(response.data.data)
           router.push('/home')
           return
         }

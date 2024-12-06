@@ -4,6 +4,8 @@ import (
 	"chatserver/db"
 	"chatserver/models"
 	"context"
+	"fmt"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -47,6 +49,42 @@ func CreateChat(ctx context.Context, senderID, recipientID string) (*models.Chat
     if err != nil {
         return nil, err
     }
+	
+	// Perform an aggregation to populate the `participantsDetails` field
+	matchStage := bson.D{
+		{Key: "$match", Value: bson.D{
+			{Key: "_id", Value: newChat.ID},
+		}},
+	}
+	lookupStage := bson.D{
+		{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "users"},
+			{Key: "localField", Value: "participants"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "participants"},
+		}},
+	}
+	
+	cursor, err := chatCollection.Aggregate(ctx, mongo.Pipeline{
+		matchStage,
+		lookupStage,
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	// Decode the result into the newChat object
+	var populatedChats []models.Chat
+	if err := cursor.All(ctx, &populatedChats); err != nil {
+		return nil, err
+	}
+	if len(populatedChats) == 0 {
+		return nil, fmt.Errorf("chat not found after insertion")
+	}
+    fmt.Println("chat",populatedChats)
+	// Return the populated chat document
+	return &populatedChats[0], nil
     
-    return newChat, nil
+    // return newChat, nil
 }

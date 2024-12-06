@@ -54,7 +54,11 @@ func LoginUser(ctx context.Context, user models.User) (*models.User, error) {
 func FindUserById(ctx context.Context, userId string) (*models.User, error) {
 
     var foundUser models.User
-    err := userCollection.FindOne(ctx, bson.M{"_id": userId}).Decode(&foundUser)
+    objectID, err := primitive.ObjectIDFromHex(userId)
+    if err!= nil {
+        return nil, err
+    }
+    err = userCollection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&foundUser)
     if err != nil {
         if err == mongo.ErrNoDocuments {
             return nil, fmt.Errorf("user not found")
@@ -73,7 +77,7 @@ func IsUserExists(ctx context.Context, userId string) (bool, error) {
         return false, err
     }
     err = userCollection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&foundUser)
-    fmt.Printf("User query result - err: %v\n", err)
+    // fmt.Printf("User query result - err: %v\n", err)
     if err != nil {
         if err == mongo.ErrNoDocuments {
             return false, nil

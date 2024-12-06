@@ -156,7 +156,8 @@ func (s *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) {
 			"recipient":     recipientDetails,
 		},
 	}
-
+    fmt.Println("chat created successfully",response);
+    // Notify recipient about new chat
 	// Respond with created chat
 	utils.SendResponse(w, http.StatusCreated, response)
 }

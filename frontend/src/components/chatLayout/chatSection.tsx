@@ -9,26 +9,43 @@ import { PORT, SOCKET_URL } from "@/config";
 import axiosInstance from "@/config/axiosInstance";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
+import { User } from "@/interfaces/userInterface";
 
 export default function ChatSection() {
 
   const [messages, setMessages] = useState<ChatMessageInterface[]>([]);
   const [message, setMessage] = useState(""); 
+  const [chats, setChats] = useState([]);
   const [isTyping, setIsTyping] = useState(false); // To track if someone is currently typing
   const [selfTyping, setSelfTyping] = useState(false); // To track if the current user is typing
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { user } = useAuth();
- 
+  let currentUserId = user?.id;
+  const [reciever,setReciever] = useState<User|null>();
   const [socket,setSocket] = useState<WebSocketService | null>(null);
   
   useEffect(() => {
-    // const service = new WebSocketService(`${SOCKET_URL}/home`);
-    // setSocket(service);
-    handleAddChat()
-    // return () => {
-    //   service.close();  
-    // };
-  }, []);
+    if (user) {      
+      console.log("user", user);
+      const service = new WebSocketService(`${SOCKET_URL}/chat/?userId=${currentUserId}`);
+      setSocket(service);
+      // handleAddChat()
+      return () => {
+        service.close();  
+      };
+    }
+  }, [user]);
+
+  // useEffect(() => {
+  //   console.log('Current user in this component:', user)
+  // }, [user])
+  
+  useEffect(() => {
+    if (socket) {
+      console.log("here");
+      handleAddChat()
+    }
+  }, [socket])
 
   // const handleOnMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   //   // Update the message state with the current input value
@@ -65,13 +82,29 @@ export default function ChatSection() {
   // };
 
   const handleAddChat = async () => {
-    let selectedUser ;
-    let currentUserId = user?.id;
+    let selectedUser ="67513c7e7b461271f5fa0d05" ;
     if (!selectedUser) return;
   
-    const response = await axios.post(`${PORT}/chat?userId=${currentUserId}`, {
-      participants: [currentUserId, selectedUser],
+    axios.post(`${PORT}/chat/create?userId=${currentUserId}`, { senderId:currentUserId, recipientId:selectedUser}, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then((response) => {
+      if (response.status === 200) {
+        console.log("Chat created successfully:", response.data);
+        // Handle the response, such as updating state or navigating
+        // setChat(response.data.data);
+        // router.push('/chat');
+        return;
+      }
+      console.log("Chat created but unexpected status:", response);
+    })
+    .catch((error) => {
+      console.error("Error creating chat:", error);
+      // setErrors([error.response?.data?.error || "Unknown error occurred"]);
     });
+  
     // setChats((prevChats) => [...prevChats, response.data]);
     // setIsModalOpen(false);
   };
