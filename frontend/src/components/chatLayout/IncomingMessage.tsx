@@ -1,4 +1,4 @@
-export default function IncomingMessage() {
+export default function MessageContainer() {
   return (
     <div className="flex mb-4 cursor-pointer">
       <div className="w-9 h-9 rounded-full flex items-center justify-center mr-2">

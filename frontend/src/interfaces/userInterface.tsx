@@ -1,6 +1,7 @@
 export interface User {
     id: string; // Unique identifier for the user
-    name: string; // Name of the user
+  name: string; // Name of the user
+  username: string; //
     email: string;
     updated_at: string;
     created_at: string;

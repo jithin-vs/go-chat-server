@@ -72,6 +72,10 @@ class WebSocketService {
     }
   }
 
+  isOpen(): boolean {
+    return this.socket?.readyState === WebSocket.OPEN;
+  }
+
   sendMessage(message: string) {
     if (this.socket && this.socket.readyState == WebSocket.OPEN) {
       console.log(message);
