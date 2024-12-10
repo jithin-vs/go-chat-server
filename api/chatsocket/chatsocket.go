@@ -1,25 +1,28 @@
 package chatsocket
 
 import (
+	"chatserver/models"
 	"chatserver/services"
 	"chatserver/utils"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"sync"
 
 	"github.com/gorilla/websocket"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Message struct {
-	SenderID    string `json:"senderId"`
-	RecipientID string `json:"recipientId"`
-	Content     string `json:"content"`
-}
+// type Message struct {
+// 	SenderID    string `json:"senderId"`
+// 	RecipientID string `json:"recipientId"`
+// 	Content     string `json:"content"`
+// }
 
 type Client struct {
 	Conn *websocket.Conn
-	Send chan Message
+	Send chan models.Messages
 }
 
 type ChatServer struct {
@@ -69,7 +72,7 @@ func (s *ChatServer) HandleConnection(w http.ResponseWriter, r *http.Request) {
     fmt.Println("connection established")
 	client := &Client{
 		Conn: conn,
-		Send: make(chan Message, 256),
+		Send: make(chan models.Messages, 256),
 	}
 
 	s.mu.Lock()
@@ -129,32 +132,30 @@ func (s *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) {
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Error checking existing chat")
 		return
 	}
-
 	// If chat exists, return existing chat
 	if existingChat != nil {
 		utils.SendResponse(w, http.StatusOK, existingChat)
 		return
 	}
-
+	
 	// Create new chat
 	newChat, err := services.CreateChat(r.Context(), req.SenderID, req.RecipientID)
 	if err != nil {
+		fmt.Println("chat error:", err)
 		utils.SendErrorResponse(w, http.StatusInternalServerError, "Failed to create chat")
 		return
 	}
+	fmt.Println("chats exists? ",newChat);
 
-    recipientDetails,err := services.FindUserById(r.Context(),req.RecipientID)
-	if err != nil {
-		utils.SendErrorResponse(w, http.StatusNoContent, "Recipient not found")
-		return
-	}
+    // recipientDetails,err := services.FindUserById(r.Context(),req.RecipientID)
+	// if err != nil {
+	// 	utils.SendErrorResponse(w, http.StatusNoContent, "Recipient not found")
+	// 	return
+	// }
 
 	response := map[string]interface{}{
 		"message": "Chat created successfully",
-		"data": map[string]interface{}{
-			"chat":          newChat,
-			"recipient":     recipientDetails,
-		},
+		"data": newChat,
 	}
     fmt.Println("chat created successfully",response);
     // Notify recipient about new chat
@@ -171,7 +172,7 @@ func (s *ChatServer) readMessages(userID string, client *Client) {
 	}()
 
 	for {
-		var msg Message
+		var msg models.Messages
 		err := client.Conn.ReadJSON(&msg)
 		if err != nil {
 			log.Printf("Read error: %v", err)
@@ -179,7 +180,8 @@ func (s *ChatServer) readMessages(userID string, client *Client) {
 		}
 
 		// Validate sender and recipient
-		if msg.SenderID != userID {
+		userObjectID, _ := primitive.ObjectIDFromHex(userID)
+		if msg.SenderID != userObjectID {
 			log.Printf("Unauthorized sender: expected %s, got %s", userID, msg.SenderID)
 			continue
 		}
@@ -189,9 +191,9 @@ func (s *ChatServer) readMessages(userID string, client *Client) {
 	}
 }
 
-func (s *ChatServer) routeMessage(msg Message) {
+func (s *ChatServer) routeMessage(msg models.Messages) {
 	s.mu.RLock()
-	recipientClient, exists := s.clients[msg.RecipientID]
+	recipientClient, exists := s.clients[msg.RecipientID.Hex()]
 	s.mu.RUnlock()
 
 	if !exists {
@@ -217,4 +219,53 @@ func (s *ChatServer) writeMessages(client *Client) {
 			return
 		}
 	}
+}
+
+func (s *ChatServer) SendMessages(w http.ResponseWriter, r *http.Request) {
+    var msg models.Messages
+    if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
+        utils.SendErrorResponse(w, http.StatusBadRequest, "Invalid message format")
+        return
+    }
+    fmt.Println("here..")
+    // Validate chat existence (as in your previous implementation)
+    isExist, chatErr := services.IsChatExists(r.Context(), msg.ChatID)
+    if chatErr != nil {
+        utils.SendErrorResponse(w, http.StatusInternalServerError, "Server error")
+        return
+    }
+
+    if !isExist {
+        utils.SendErrorResponse(w, http.StatusNotFound, "Chat does not exist")
+        return
+    }
+
+    // Store message
+    storedMessage, err := services.StoreMessage(r.Context(), msg)
+    if err != nil {
+        utils.SendErrorResponse(w, http.StatusInternalServerError, "Error storing message")
+        return
+    }
+
+    recipientIDStr := msg.RecipientID.Hex()
+    // Attempt to send via WebSocket if recipient is online
+    s.mu.RLock()
+    recipientClient, exists := s.clients[recipientIDStr]
+    s.mu.RUnlock()
+
+    if exists {
+        select {
+        case recipientClient.Send <- *storedMessage:
+            log.Println("Message sent to recipient via WebSocket")
+        default:
+            log.Println("Recipient channel full")
+        }
+    }
+
+    // Respond to sender
+    response := map[string]interface{}{
+        "message": "Message sent",
+        "data":    storedMessage,
+    }
+    utils.SendResponse(w, http.StatusOK, response)
 }
