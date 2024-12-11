@@ -8,19 +8,25 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [wsService, setWsService] = useState<WebSocketService | null>(null);
   
-  useEffect(() => {
-    const service = new WebSocketService("ws://localhost:8080/home");
-    setWsService(service);
-    return () => {
-      service.close();  
-    };
-  }, []);
+  // useEffect(() => {
+  //   const service = new WebSocketService("ws://localhost:8080/home");
+  //   setWsService(service);
+  //   return () => {
+  //     service.close();
+  //   };
+  // }, []);
   
-  return (
+  // return (
+  //   <div>
+  //     <ChatHistory socket = {wsService} />
+  //     {/* <ChatMessage socket = {wsService} /> */}
+  //     <ChatInput   socket = {wsService}/>
+  //   </div>
+  // );
+  
+    return (
     <div>
-      <ChatHistory socket = {wsService} /> 
-      {/* <ChatMessage socket = {wsService} /> */}
-      <ChatInput   socket = {wsService}/>
+      <div>home</div>
     </div>
   );
 }

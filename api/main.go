@@ -3,10 +3,11 @@ package main
 import (
 	"chatserver/db"
 	"chatserver/routes"
+    "chatserver/v2"
 	"log"
 	"net/http"
-	"github.com/rs/cors"
 
+	"github.com/rs/cors"
 )
  
 
@@ -17,7 +18,9 @@ func main()  {
 	if dberr != nil {
 		log.Fatalf("Failed to initialize MongoDB: %v", dberr)
 	}
-	routers.SetupRoutes()
+	hub := chatws.NewHub()
+	wsHandler := chatws.NewHandler(hub)
+	routers.SetupRoutes(wsHandler)
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{	"http://localhost:3000","http://localhost:3001",}, // Allow only your React app
 		AllowCredentials: true,                             // Allow cookies/auth headers

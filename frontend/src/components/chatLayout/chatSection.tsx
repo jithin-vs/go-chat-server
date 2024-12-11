@@ -24,17 +24,17 @@ export default function ChatSection() {
   const [receiver,setReceiver] = useState<User|null>();
   const [socket,setSocket] = useState<WebSocketService | null>(null);
   
-  useEffect(() => {
-    if (user) {      
-      console.log("user", user);
-      const service = new WebSocketService(`${SOCKET_URL}/chat/?userId=${currentUserId}`);
-      setSocket(service);
-      // handleAddChat()
-      return () => {
-        service.close();  
-      };
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {      
+  //     console.log("user", user);
+  //     const service = new WebSocketService(`${SOCKET_URL}/chat?userId=${currentUserId}`);
+  //     setSocket(service);
+  //     // handleAddChat()
+  //     return () => {
+  //       service.close();  
+  //     };
+  //   }
+  // }, [user]);
 
   // useEffect(() => {
   //   console.log('Current user in this component:', user)
@@ -63,11 +63,11 @@ export default function ChatSection() {
   }
   
   useEffect(() => {
-    if (socket) {
+    if (user) {
       handleAddChat()
       getChats()
     }
-  }, [socket])
+  }, [user])
 
   // Function to send a chat message
   const sendChatMessage = async () => {
@@ -75,38 +75,38 @@ export default function ChatSection() {
     const apiData = {
       senderId: currentUserId,
       content: message,
-      chatId: chat?.id
+      chatId: chat?.id,
+      recipientId: receiver?.id
     }
-    // if (!chat?._id || !socket) return;
+    if (!chat?.id || !socket) return;
     console.log("chat", chat);
-    axios.post(`${PORT}/chat/messages/${chat?.id}`,apiData,{
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then((response) => {
-      if (response.status === 200) {
-        console.log("message sended successfully:", response.data.data);
-        // Handle the response, such as updating state or navigating
-        if (response.status === 200) {
-          console.log("Message sent successfully:", response.data.data);
-          setChats(response.data.data);
-
-          // Optionally send via WebSocket as well
-          if (socket?.isOpen()){
-              socket?.sendMessage(JSON.stringify(apiData));
-          }
-       }
-        setChats(response.data.data);
-        // router.push('/chat');
-        return;
-      }
-      console.log("Chat created but unexpected status:", response);
-    })
-    .catch((error) => {
-      console.error("Error creating chat:", error);
-      // setErrors([error.response?.data?.error || "Unknown error occurred"]);
-    });
+    // Optionally send via WebSocket as well
+    if (socket?.isOpen()) {
+      socket.emit('message', apiData); // Ensure correct payload
+  }
+    // axios.post(`${PORT}/chat/messages/${chat?.id}`,apiData,{
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    // })
+    // .then((response) => {
+    //   if (response.status === 200) {
+    //     console.log("message sended successfully:", response.data.data);
+    //     // Handle the response, such as updating state or navigating
+    //     if (response.status === 200) {
+    //       console.log("Message sent successfully:", response.data.data);
+    //       setChats(response.data.data);
+    //    }
+    //     setChats(response.data.data);
+    //     // router.push('/chat');
+    //     return;
+    //   }
+    //   console.log("Chat created but unexpected status:", response);
+    // })
+    // .catch((error) => {
+    //   console.error("Error creating chat:", error);
+    //   // setErrors([error.response?.data?.error || "Unknown error occurred"]);
+    // });
 
     
   };

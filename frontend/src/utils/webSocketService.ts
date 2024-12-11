@@ -8,6 +8,7 @@ class WebSocketService {
 
   constructor(url: string) {
     this.url = url;
+    console.log("url",this.url);
     this.connect(url);
   }
 

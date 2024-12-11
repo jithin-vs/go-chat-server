@@ -9,16 +9,15 @@ import (
 	"log"
 	"net/http"
 	"sync"
-
 	"github.com/gorilla/websocket"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// type Message struct {
-// 	SenderID    string `json:"senderId"`
-// 	RecipientID string `json:"recipientId"`
-// 	Content     string `json:"content"`
-// }
+// // type Message struct {
+// // 	SenderID    string `json:"senderId"`
+// // 	RecipientID string `json:"recipientId"`
+// // 	Content     string `json:"content"`
+// // }
 
 type Client struct {
 	Conn *websocket.Conn
@@ -79,9 +78,6 @@ func (s *ChatServer) HandleConnection(w http.ResponseWriter, r *http.Request) {
 	s.clients[userID] = client
 	s.mu.Unlock()
 
-	// Start goroutines for reading and sending messages
-	go s.readMessages(userID, client)
-	go s.writeMessages(client)
 }
 
 func (s *ChatServer) CreateChat(w http.ResponseWriter, r *http.Request) {
@@ -211,7 +207,8 @@ func (s *ChatServer) routeMessage(msg models.Messages) {
 
 func (s *ChatServer) writeMessages(client *Client) {
 	defer client.Conn.Close()
-
+     // Loop through messages to send and write to WebSocket connection
+    log.Println("Starting write goroutine for", client.Conn.RemoteAddr().String())
 	for msg := range client.Send {
 		err := client.Conn.WriteJSON(msg)
 		if err != nil {
@@ -252,7 +249,7 @@ func (s *ChatServer) SendMessages(w http.ResponseWriter, r *http.Request) {
     s.mu.RLock()
     recipientClient, exists := s.clients[recipientIDStr]
     s.mu.RUnlock()
-
+    println("exists?",exists)
     if exists {
         select {
         case recipientClient.Send <- *storedMessage:
