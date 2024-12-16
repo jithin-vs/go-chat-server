@@ -30,7 +30,7 @@ export default function Login() {
       password,
     }
     // Perform API call to sign up user
-    axios.post(`${PORT}/login`, apiData, {
+    axios.post(`${PORT}/api/login`, apiData, {
       headers: {
           'Content-Type': 'application/json'
       }
