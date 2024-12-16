@@ -4,6 +4,7 @@ import { WebSocketServer } from "ws";
 import bodyParser from "body-parser";
 import connectDB from "./db/mongo.js";
 import Routes from "./routes/routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 import { configDotenv } from "dotenv";
 import cors from "cors";
 
@@ -15,6 +16,7 @@ const server = http.createServer(app);
 app.use(cors());
 
 app.use(express.json()); // To parse JSON bodies
+app.use("/api/chat", chatRoutes);
 app.use("/api", Routes);
 // Middleware
 

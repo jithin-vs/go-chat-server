@@ -49,7 +49,25 @@ const registerUser = async ({ name, username, email, password }) => {
   }
 };
 
+const findUserByName = async (query) => {
+  try {
+
+    // Find the user based on the query object
+    const user = await User.find({username: query}).select("_id username email");;
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+  return user;
+  } catch (error) {
+    throw new Error("Internal error: " + error.message);
+  }
+};
+
+
+
 export default {
   loginUser,
   registerUser,
+  findUserByName,
 };
