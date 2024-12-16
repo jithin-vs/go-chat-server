@@ -2,18 +2,18 @@ import axios from "axios"
 import { PORT } from "./index";
 import { getCookies, setCookies } from "../hooks/cookies";
 
-const axiosInstance = axios.create({
+const API = axios.create({
     baseURL: `${PORT}`, 
     timeout: 1000,
     headers: { 'Content-Type': 'application/json' }
 });
   
-axiosInstance.interceptors.request.use(
+API.interceptors.request.use(
     function (config) {
-    const token = getCookies('accessToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
+    // const token = getCookies('accessToken');
+    //   if (token) {
+    //     config.headers.Authorization = `Bearer ${token}`;
+    //   }
       return config;
     },
     function (error) {
@@ -21,7 +21,7 @@ axiosInstance.interceptors.request.use(
     }
 );
   
-axiosInstance.interceptors.response.use(
+API.interceptors.response.use(
     function (response) {
     if (response.status === 401) {
         const refreshToken = getCookies('refreshToken');
@@ -44,8 +44,8 @@ axiosInstance.interceptors.response.use(
               console.error("Error signing up user:", error.resp.data.error);
             });
     }
-      console.log('resp:', response);
-      return response;
+      console.log('resp:', response.data);
+      return response?.data;
     },
     function (error) {
       // Handle the response error
@@ -59,4 +59,4 @@ axiosInstance.interceptors.response.use(
   );
   
   
-  export default axiosInstance;
+  export default API;
